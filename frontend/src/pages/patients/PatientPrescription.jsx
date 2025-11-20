@@ -1,25 +1,21 @@
 import React from "react";
 import { FileText, Download, CalendarDays, Pill } from "lucide-react";
+import { useGetPrescriptionsByPatientQuery } from "@/store/api/patientPrescriptionFormApiSlice";
 
 function PatientPrescription() {
-  const prescriptions = [
-    {
-      _id: "691f2e5bccd542a1623ded6f",
-      careToBeTaken:
-        "Take proper rest, avoid oily food, daily walking recommended.",
-      medicines: "Aspirin 75mg daily, Vitamin D supplement.",
-      pdf: "https://res.cloudinary.com/vinaydev19/image/upload/v1763651168/nuik1aadifatowdvar27.pdf",
-      createdAt: "2025-11-20T15:06:03.270Z",
-    },
-    {
-      _id: "691f2e5bccd542a162dasf3ded6f",
-      careToBeTaken:
-        "Take proper rest, avoid oily food, daily walking recommended.",
-      medicines: "Aspirin 75mg daily, Vitamin D supplement.",
-      pdf: "https://res.cloudinary.com/vinaydev19/image/upload/v1763651168/nuik1aadifatowdvar27.pdf",
-      createdAt: "2025-11-20T15:06:03.270Z",
-    },
-  ];
+  const { data, isLoading, isError } = useGetPrescriptionsByPatientQuery();
+
+  if (isLoading)
+    return <p className="text-center pt-10 text-lg">Loading prescriptions...</p>;
+
+  if (isError)
+    return (
+      <p className="text-center pt-10 text-red-600 text-lg">
+        Failed to load prescriptions.
+      </p>
+    );
+
+  const prescriptions = data?.data?.prescriptions || [];
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -36,18 +32,19 @@ function PatientPrescription() {
               key={pres._id}
               className="bg-white shadow-md rounded-xl p-5 border border-gray-200 hover:shadow-lg transition"
             >
+              {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <FileText size={22} className="text-blue-600" />
                 <h2 className="text-xl font-semibold">Prescription</h2>
               </div>
 
+              {/* Date */}
               <div className="flex items-center gap-2 text-gray-500 mb-4">
                 <CalendarDays size={18} />
-                <span>
-                  {new Date(pres.createdAt).toLocaleDateString("en-IN")}
-                </span>
+                <span>{new Date(pres.createdAt).toLocaleDateString("en-IN")}</span>
               </div>
 
+              {/* Medicines */}
               <div className="mb-4">
                 <label className="font-semibold flex items-center gap-2">
                   <Pill size={18} />
@@ -56,11 +53,13 @@ function PatientPrescription() {
                 <p className="text-gray-700 mt-1">{pres.medicines}</p>
               </div>
 
+              {/* Care to be taken */}
               <div className="mb-4">
                 <label className="font-semibold">Care To Be Taken</label>
                 <p className="text-gray-700 mt-1">{pres.careToBeTaken}</p>
               </div>
 
+              {/* PDF Download */}
               <a
                 href={pres.pdf}
                 target="_blank"

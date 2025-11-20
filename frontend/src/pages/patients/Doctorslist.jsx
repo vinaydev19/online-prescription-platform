@@ -1,33 +1,21 @@
+import { useGetAllDoctorsQuery } from "@/store/api/doctorApiSlice";
 import React from "react";
 import { Link } from "react-router-dom";
 
 function Doctorslist() {
-  const doctors = [
-    {
-      _id: 1,
-      name: "Dr. Rahul Sharma",
-      specialty: "Cardiologist",
-      image: "https://via.placeholder.com/120",
-    },
-    {
-      _id: 2,
-      name: "Dr. Meera Kapoor",
-      specialty: "Dermatologist",
-      image: "https://via.placeholder.com/120",
-    },
-    {
-      _id: 3,
-      name: "Dr. Arjun Patel",
-      specialty: "Orthopedic Surgeon",
-      image: "https://via.placeholder.com/120",
-    },
-    {
-      _id: 4,
-      name: "Dr. Kavita Nair",
-      specialty: "Neurologist",
-      image: "https://via.placeholder.com/120",
-    },
-  ];
+  const { data, isLoading, isError } = useGetAllDoctorsQuery();
+
+  if (isLoading)
+    return <p className="text-center text-lg pt-10">Loading doctors...</p>;
+
+  if (isError)
+    return (
+      <p className="text-center text-red-600 text-lg pt-10">
+        Failed to load doctors!
+      </p>
+    );
+
+  const doctors = data?.data?.doctors || [];
 
   return (
     <div className="min-h-screen bg-gray-100 px-6 py-8">
@@ -42,7 +30,7 @@ function Doctorslist() {
             className="bg-white shadow-md rounded-xl p-5 flex flex-col items-center hover:shadow-lg transition"
           >
             <img
-              src={doctor.image}
+              src={doctor.profilePicture}
               alt={doctor.name}
               className="w-28 h-28 rounded-full object-cover border border-gray-300"
             />

@@ -46,14 +46,22 @@ const patientSignUp = asyncHandler(async (req, res) => {
         email,
         age,
         phoneNumber,
-        historyOfSurgery,
-        historyOfIllness,
         password,
         role
     } = req.body
 
-    if ([name, email, age, phoneNumber, password].some(field => !field || field.trim() === '' && !Array.isArray(historyOfIllness) && !Array.isArray(historyOfSurgery))) {
-        throw new ApiError(400, 'All fields are required')
+    let historyOfSurgery = [];
+    let historyOfIllness = [];
+
+    if (req.body.historyOfSurgery) {
+        historyOfSurgery = JSON.parse(req.body.historyOfSurgery);
+    }
+    if (req.body.historyOfIllness) {
+        historyOfIllness = JSON.parse(req.body.historyOfIllness);
+    }
+
+    if (!name || !email || !age || !phoneNumber || !password) {
+        throw new ApiError(400, "All fields are required");
     }
 
     const patientExists = await Patient.findOne(

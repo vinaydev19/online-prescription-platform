@@ -9,47 +9,49 @@ import {
   PlusCircle,
 } from "lucide-react";
 
+import {
+  useGetPrescriptionsByDoctorQuery,
+  useCreatePrescriptionMutation,
+  useUpdatePrescriptionMutation,
+  useDeletePrescriptionMutation,
+} from "@/store/api/patientPrescriptionFormApiSlice";
+
+import toast from "react-hot-toast";
+
 function DoctorPrescription() {
+  // 📌 API Calls
+  const { data, isLoading, isError } = useGetPrescriptionsByDoctorQuery();
+  const [createPrescription] = useCreatePrescriptionMutation();
+  const [updatePrescription] = useUpdatePrescriptionMutation();
+  const [deletePrescriptionApi] = useDeletePrescriptionMutation();
 
-  const mockPrescriptions = [
-    {
-      _id: "691f2e1accd542a1623ded69",
-      patientName: "Alice Johnson",
-      patientId: "691f29cedbc89041a41da49a",
-      consultationFormId: "691f2b2464af4af7ad197cec",
-      careToBeTaken: "Avoid junk food and stress. Take proper rest.",
-      medicines: "Aspirin 75mg, Vitamin D, Omega 3 capsule.",
-      createdAt: "2025-11-20T15:04:58.267Z",
-      pdf: "http://res.cloudinary.com/vinaydev19/image/upload/v1763651213/sample.pdf",
-    },
-    {
-      _id: "691f2e5bccd542a1623ded6f",
-      patientName: "Michael Brown",
-      patientId: "691f2b7164af4af7ad197cef",
-      consultationFormId: "691f2b7f64af4af7ad197cfa",
-      careToBeTaken: "Take rest, avoid oily food, drink more water.",
-      medicines: "Aspirin 75mg daily, Vitamin D supplement.",
-      createdAt: "2025-11-20T15:06:03.270Z",
-      pdf: "https://res.cloudinary.com/vinaydev19/image/upload/v1763651168/sample2.pdf",
-    },
-  ];
-
-  const [prescriptions, setPrescriptions] = useState(mockPrescriptions);
+  // Extract prescriptions
+  const prescriptions = data?.data?.prescriptions || [];
 
   const [showForm, setShowForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
-
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+
+  // 🔥 Form fields
+  const [formValues, setFormValues] = useState({
+    careToBeTaken: "",
+    medicines: "",
+  });
 
   const openCreateForm = () => {
     setEditMode(false);
     setSelectedPrescription(null);
+    setFormValues({ careToBeTaken: "", medicines: "" });
     setShowForm(true);
   };
 
   const openEditForm = (item) => {
     setEditMode(true);
     setSelectedPrescription(item);
+    setFormValues({
+      careToBeTaken: item.careToBeTaken,
+      medicines: item.medicines,
+    });
     setShowForm(true);
   };
 
@@ -59,15 +61,81 @@ function DoctorPrescription() {
     setEditMode(false);
   };
 
-  const deletePrescription = (id) => {
-    const filtered = prescriptions.filter((p) => p._id !== id);
-    setPrescriptions(filtered);
+  const handleChange = (e) => {
+    setFormValues({
+      ...formValues,
+      [e.target.name]: e.target.value,
+    });
   };
+
+  // ➤ CREATE PRESCRIPTION
+  const handleCreate = async () => {
+    try {
+      const payload = {
+        patientId: selectedPrescription?.patientId, // will come from "Create" inside consultation page
+        consultationFormId: selectedPrescription?.consultationFormId,
+        data: formValues,
+      };
+
+      await createPrescription(payload).unwrap();
+      toast.success("Prescription created successfully");
+
+      closeForm();
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.data?.message || "Failed to create");
+    }
+  };
+
+  // ➤ UPDATE PRESCRIPTION
+  const handleUpdate = async () => {
+    try {
+      await updatePrescription({
+        prescriptionId: selectedPrescription._id,
+        data: formValues,
+      }).unwrap();
+
+      toast.success("Prescription updated");
+
+      closeForm();
+    } catch (err) {
+      console.log(err);
+      toast.error("Update failed");
+    }
+  };
+
+  // ➤ DELETE PRESCRIPTION
+  const handleDelete = async (id) => {
+    try {
+      await deletePrescriptionApi(id).unwrap();
+      toast.success("Prescription deleted");
+    } catch (err) {
+      console.log(err);
+      toast.error("Delete failed");
+    }
+  };
+
+  // 🌀 Loading UI
+  if (isLoading)
+    return (
+      <div className="p-6 text-xl text-gray-600 text-center">
+        Loading prescriptions...
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="p-6 text-xl text-red-600 text-center">
+        Failed to load prescriptions
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-blue-600">Doctor Prescriptions</h1>
+        <h1 className="text-3xl font-bold text-blue-600">
+          Doctor Prescriptions
+        </h1>
 
         <button
           onClick={openCreateForm}
@@ -78,6 +146,7 @@ function DoctorPrescription() {
         </button>
       </div>
 
+      {/* LIST */}
       <div className="space-y-4">
         {prescriptions.map((item) => (
           <div
@@ -117,7 +186,7 @@ function DoctorPrescription() {
                 </button>
 
                 <button
-                  onClick={() => deletePrescription(item._id)}
+                  onClick={() => handleDelete(item._id)}
                   className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
                 >
                   <Trash2 size={18} />
@@ -128,6 +197,7 @@ function DoctorPrescription() {
         ))}
       </div>
 
+      {/* FORM POPUP */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center px-4">
           <div className="bg-white shadow-xl rounded-xl p-6 w-full max-w-xl relative">
@@ -147,25 +217,28 @@ function DoctorPrescription() {
               <div>
                 <label className="font-semibold">Care to be taken</label>
                 <textarea
+                  name="careToBeTaken"
                   className="mt-2 w-full border rounded-lg p-2"
-                  defaultValue={selectedPrescription?.careToBeTaken || ""}
-                  placeholder="Enter care instructions..."
+                  value={formValues.careToBeTaken}
+                  onChange={handleChange}
                   rows={3}
-                ></textarea>
+                />
               </div>
 
               <div>
                 <label className="font-semibold">Medicines</label>
                 <textarea
+                  name="medicines"
                   className="mt-2 w-full border rounded-lg p-2"
-                  defaultValue={selectedPrescription?.medicines || ""}
-                  placeholder="Enter medicine details..."
+                  value={formValues.medicines}
+                  onChange={handleChange}
                   rows={3}
-                ></textarea>
+                />
               </div>
 
               <button
                 type="button"
+                onClick={editMode ? handleUpdate : handleCreate}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-4"
               >
                 {editMode ? "Update Prescription" : "Submit Prescription"}

@@ -1,6 +1,5 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { set } from "date-fns";
 import {
     persistStore, persistReducer,
     FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER
@@ -33,7 +32,7 @@ export const store = configureStore({
             serializableCheck: {
                 ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
             },
-        }),
+        }).concat(apiSlice.middleware),
     devTools: true,
 });
 

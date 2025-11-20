@@ -1,4 +1,9 @@
+import { useDoctorLoginMutation } from "@/store/api/doctorApiSlice";
+import { getDoctor } from "@/store/slices/doctorSlice";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function DoctorLogin() {
   const [formData, setFormData] = useState({
@@ -6,13 +11,27 @@ function DoctorLogin() {
     password: ""
   });
 
+  const [doctorLogin, { isLoading }] = useDoctorLoginMutation();
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Doctor Login Data:", formData);
+
+    try {
+      const res = await doctorLogin(formData).unwrap();
+      toast.success("Login successful");
+      console.log("API Response:", res);
+      navigate('/doctor/consultations')
+      dispatch(getDoctor(res.data.loggedDoctor));
+    } catch (error) {
+      console.error("Login failed", error);
+      toast.error(error?.data?.message || "Login failed");
+    }
   };
 
   return (

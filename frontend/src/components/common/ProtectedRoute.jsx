@@ -1,10 +1,13 @@
-import React from "react";
+import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 
 function ProtectedRoute() {
-  const isLoggedIn = true; 
+  const doctor = useSelector((state) => state.doctor.doctor);
+  const patient = useSelector((state) => state.patient.patient);
 
-  return isLoggedIn ? <Outlet /> : <Navigate to="/login" />;
+  const isLoggedIn = doctor || patient; // if either logged in → allow
+
+  return isLoggedIn ? <Outlet /> : <Navigate to="/patient/login" />;
 }
 
 export default ProtectedRoute;

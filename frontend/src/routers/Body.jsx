@@ -17,10 +17,10 @@ function Body() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/ patient/login" element={<PatientLogin />} />
-        <Route path="/ patient/signup" element={<PatientSignup />} />
-        <Route path="/ doctor/login" element={<DoctorLogin />} />
-        <Route path="/ doctor/signup" element={<DoctorSignup />} />
+        <Route path="/patient/login" element={<PatientLogin />} />
+        <Route path="/patient/signup" element={<PatientSignup />} />
+        <Route path="/doctor/login" element={<DoctorLogin />} />
+        <Route path="/doctor/signup" element={<DoctorSignup />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<RoleProtectedRoute allowedRoles={["doctor"]} />}>
             <Route

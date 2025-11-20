@@ -1,4 +1,7 @@
+import { useDoctorSignupMutation } from "@/store/api/doctorApiSlice";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 function DoctorSignup() {
   const [formData, setFormData] = useState({
@@ -11,6 +14,9 @@ function DoctorSignup() {
     profilePicture: null
   });
 
+  const [doctorSignup, { isLoading }] = useDoctorSignupMutation();
+  const navigate = useNavigate()
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -19,9 +25,27 @@ function DoctorSignup() {
     setFormData({ ...formData, profilePicture: e.target.files[0] });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Doctor Signup Data:", formData);
+
+    const submitData = new FormData();
+    submitData.append("name", formData.name);
+    submitData.append("email", formData.email);
+    submitData.append("specialty", formData.specialty);
+    submitData.append("phoneNumber", formData.phoneNumber);
+    submitData.append("yearsOfExperience", formData.yearsOfExperience);
+    submitData.append("password", formData.password);
+    submitData.append("profilePicture", formData.profilePicture);
+
+    try {
+      const res = await doctorSignup(submitData).unwrap();
+      toast.success("Signup successful");
+      console.log("Signup response:", res);
+      navigate('/doctor/login')
+    } catch (error) {
+      console.error("Signup failed", error);
+      toast.error(error?.data?.message || "Signup failed");
+    }
   };
 
   return (

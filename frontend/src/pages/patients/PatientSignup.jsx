@@ -1,4 +1,7 @@
+import { usePatientSignupMutation } from "@/store/api/patientApiSlice";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 function PatientSignup() {
   const [formData, setFormData] = useState({
@@ -11,6 +14,9 @@ function PatientSignup() {
     historyOfSurgery: [{ surgeryName: "", surgeryDate: "", notes: "" }],
     historyOfIllness: [{ illnessName: "", diagnosisDate: "", notes: "" }],
   });
+
+  const [patientSignup, { isLoading }] = usePatientSignupMutation();
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({
@@ -68,9 +74,40 @@ function PatientSignup() {
     setFormData({ ...formData, historyOfIllness: updated });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Patient Signup Data:", formData);
+
+    const submitData = new FormData();
+
+    submitData.append("name", formData.name);
+    submitData.append("email", formData.email);
+    submitData.append("age", formData.age);
+    submitData.append("phoneNumber", formData.phoneNumber);
+    submitData.append("password", formData.password);
+    submitData.append("profilePicture", formData.profilePicture);
+
+    submitData.append(
+      "historyOfSurgery",
+      JSON.stringify(formData.historyOfSurgery)
+    );
+
+    submitData.append(
+      "historyOfIllness",
+      JSON.stringify(formData.historyOfIllness)
+    );
+
+    console.log("submit", submitData);
+
+
+    try {
+      const res = await patientSignup(submitData).unwrap();
+      toast.success("Patient Signup Successful!");
+      console.log("Signup Response:", res);
+      navigate('patient/login')
+    } catch (err) {
+      toast.error(err?.data?.message || "Signup failed");
+      console.log(err);
+    }
   };
 
   return (

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCreateConsultationFormMutation } from "@/store/api/doctorConsultationFormApiSlice";
+import toast from "react-hot-toast";
+
 
 function DoctorConsultationform() {
   const { doctorId } = useParams();
@@ -42,11 +45,35 @@ function DoctorConsultationform() {
   };
 
 
-  const handleSubmit = () => {
-    console.log("Final Submitted Data:", formData);
-    alert("Form Submitted Successfully!");
-    navigate("/patient/doctors");
+  const [createConsultationForm, { isLoading }] = useCreateConsultationFormMutation();
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        currentIllnessHistory: formData.currentIllnessHistory,
+        recentSurgery: formData.recentSurgery,
+        familyMedicalHistory: {
+          diabeticsStatus: formData.diabeticsStatus,
+          allergies: formData.allergies,
+          others: formData.others,
+        },
+        paymentTransactionId: formData.paymentTransactionId,
+      };
+
+      const res = await createConsultationForm({
+        doctorId,
+        data: payload,
+      }).unwrap();
+
+      toast.success("Consultation Form Submitted!");
+      navigate("/patient/doctors");
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.data?.message || "Submission failed");
+    }
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-start py-10 px-4">

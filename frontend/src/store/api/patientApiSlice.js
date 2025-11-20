@@ -1,3 +1,4 @@
+import { getPatient } from "../slices/patientSlice";
 import { apiSlice } from "./apiSlice";
 import { PATIENTS_API } from "@/utils/constants";
 
@@ -19,8 +20,7 @@ export const patientApiSlice = apiSlice.injectEndpoints({
             async onQueryStarted(arg, { dispatch, queryFulfilled }) {
                 try {
                     const res = await queryFulfilled;
-                    dispatch(getPatient(res.data.data.loggedPatient));
-                    dispatch(setRole("patient"));
+                    dispatch(getPatient(res.data.loggedPatient));
                 } catch (err) {
                     console.error("Patient login failed", err);
                 }
@@ -38,8 +38,7 @@ export const patientApiSlice = apiSlice.injectEndpoints({
             async onQueryStarted(arg, { dispatch, queryFulfilled }) {
                 try {
                     const res = await queryFulfilled;
-                    dispatch(getPatient(res.data.data.patient));
-                    dispatch(setRole("patient"));
+                    dispatch(getPatient(res.data.patient));
                 } catch { }
             }
         }),

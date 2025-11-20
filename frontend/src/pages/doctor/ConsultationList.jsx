@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   User,
   CalendarDays,
@@ -9,48 +9,33 @@ import {
   X,
   ClipboardEdit,
 } from "lucide-react";
+import { useGetConsultationFormsForDoctorQuery } from "@/store/api/doctorConsultationFormApiSlice";
+import { useCreatePrescriptionMutation } from "@/store/api/patientPrescriptionFormApiSlice";
+import toast from "react-hot-toast";
+
+
 
 function ConsultationList() {
-  const consultationForms = [
-    {
-      _id: "691f2b2464af4af7ad197cec",
-      patientId: {
-        _id: "691f29cedbc89041a41da49a",
-        name: "Alice Johnson",
-        email: "alice@example.com",
-      },
-      currentIllnessHistory: "Patient experiencing chest pain and fatigue.",
-      recentSurgery: "No recent surgeries.",
-      familyMedicalHistory: {
-        diabeticsStatus: "Non-Diabetics",
-        allergies: "None",
-        others: "High blood pressure in father",
-      },
-      paymentTransactionId: "TXN_938392922",
-      createdAt: "2025-11-20T14:52:20.246Z",
-    },
-    {
-      _id: "691f2b7f64af4af7ad197cfa",
-      patientId: {
-        _id: "691f2b7164af7ad197cef",
-        name: "Michael Brown",
-        email: "michael.brown@example.com",
-      },
-      currentIllnessHistory: "Patient experiencing chest pain and fatigue.",
-      recentSurgery: "No recent surgeries.",
-      familyMedicalHistory: {
-        diabeticsStatus: "Non-Diabetics",
-        allergies: "None",
-        others: "High blood pressure in father",
-      },
-      paymentTransactionId: "TXN_938392922",
-      createdAt: "2025-11-20T14:53:51.548Z",
-    },
-  ];
+  const [careToBeTaken, setCareToBeTaken] = useState("");
+  const [medicines, setMedicines] = useState("");
+
+  const [createPrescription, { isLoading: isCreating }] = useCreatePrescriptionMutation();
+
+  const { data, isLoading, isError } = useGetConsultationFormsForDoctorQuery();
+
+  const consultationForms = data?.data?.consultationForms || [];
 
   const [expanded, setExpanded] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
+
+  useEffect(() => {
+    if (selectedForm) {
+      setCareToBeTaken("");
+      setMedicines("");
+    }
+  }, [selectedForm]);
+
 
   const toggleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
@@ -65,6 +50,41 @@ function ConsultationList() {
     setShowForm(false);
     setSelectedForm(null);
   };
+
+  const handleSubmitPrescription = async () => {
+    try {
+      const res = await createPrescription({
+        patientId: selectedForm.patientId._id,
+        consultationFormId: selectedForm._id,
+        data: {
+          careToBeTaken,
+          medicines,
+        },
+      }).unwrap();
+
+      toast.success("Prescription created!");
+
+      closePrescriptionForm(); // Close modal
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to create prescription");
+      console.error(err);
+    }
+  };
+
+
+  if (isLoading)
+    return (
+      <div className="p-6 text-center text-xl font-semibold text-gray-600">
+        Loading consultations...
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="p-6 text-center text-xl font-semibold text-red-600">
+        Failed to load consultation forms
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -187,7 +207,9 @@ function ConsultationList() {
                   className="mt-2 w-full border rounded-lg p-2"
                   placeholder="Enter care instructions..."
                   rows={3}
-                ></textarea>
+                  value={careToBeTaken}
+                  onChange={(e) => setCareToBeTaken(e.target.value)}
+                />
               </div>
 
               <div>
@@ -196,14 +218,18 @@ function ConsultationList() {
                   className="mt-2 w-full border rounded-lg p-2"
                   placeholder="Enter medicine details..."
                   rows={3}
-                ></textarea>
+                  value={medicines}
+                  onChange={(e) => setMedicines(e.target.value)}
+                />
               </div>
 
               <button
                 type="button"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-4"
+                onClick={handleSubmitPrescription}
+                disabled={isCreating}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-4 disabled:bg-gray-400"
               >
-                Submit Prescription
+                {isCreating ? "Submitting..." : "Submit Prescription"}
               </button>
             </form>
           </div>

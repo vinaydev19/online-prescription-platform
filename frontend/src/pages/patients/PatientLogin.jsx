@@ -1,10 +1,19 @@
+import { usePatientLoginMutation } from "@/store/api/patientApiSlice";
+import { getPatient } from "@/store/slices/patientSlice";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function PatientLogin() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const [patientLogin, { isLoading }] = usePatientLoginMutation();
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleChange = (e) => {
     setFormData({
@@ -13,10 +22,19 @@ function PatientLogin() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Login submitted:", formData);
+    try {
+      const res = await patientLogin(formData).unwrap();
+      toast.success("Login Successful!");
+      console.log("Login Response:", res);
+      navigate('/patient/doctors')
+      dispatch(getPatient(res.data.loggedPatient));
+    } catch (err) {
+      toast.error(err?.data?.message || "Login failed");
+      console.log(err);
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+import { getDoctor } from "../slices/doctorSlice";
 import { apiSlice } from "./apiSlice";
 import { DOCTORS_API } from "@/utils/constants";
 
@@ -19,8 +20,7 @@ export const doctorApiSlice = apiSlice.injectEndpoints({
             async onQueryStarted(arg, { dispatch, queryFulfilled }) {
                 try {
                     const res = await queryFulfilled;
-                    dispatch(getDoctor(res.data.data.loggedDoctor));
-                    dispatch(setRole("doctor"));
+                    dispatch(getDoctor(res.data.loggedDoctor));
                 } catch (err) {
                     console.error("Doctor login failed", err);
                 }
@@ -38,8 +38,7 @@ export const doctorApiSlice = apiSlice.injectEndpoints({
             async onQueryStarted(arg, { dispatch, queryFulfilled }) {
                 try {
                     const res = await queryFulfilled;
-                    dispatch(getDoctor(res.data.data.doctor));
-                    dispatch(setRole("doctor"));
+                    dispatch(getDoctor(res.data.doctor));
                 } catch { }
             }
         }),
