@@ -16,8 +16,8 @@ const router = Router();
 router.route('/create/:patientId/:consultationFormId').post(verifyJWT, authorizeRoles('doctor'), createPatientPrescriptionForm);
 router.route('/doctor/all').get(verifyJWT, authorizeRoles('doctor'), getAllPrescriptionsByDoctor);
 router.route('/doctor/:prescriptionId').get(verifyJWT, authorizeRoles('doctor'), getPrescriptionByIdByDoctor);
-router.route('doctor/update/:prescriptionId').put(verifyJWT, authorizeRoles('doctor'), updatePrescriptionByDoctor);
-router.route('doctor/delete/:prescriptionId').delete(verifyJWT, authorizeRoles('doctor'), deletePrescriptionByDoctor);
+router.route('/doctor/update/:prescriptionId').put(verifyJWT, authorizeRoles('doctor'), updatePrescriptionByDoctor);
+router.route('/doctor/delete/:prescriptionId').delete(verifyJWT, authorizeRoles('doctor'), deletePrescriptionByDoctor);
 router.route('/patient/:prescriptionId').get(verifyJWT, authorizeRoles('patient'), getPrescriptionsByPatient);
 router.route('/patient/all').get(verifyJWT, authorizeRoles('patient'), getAllPrescriptionsByPatient);
 

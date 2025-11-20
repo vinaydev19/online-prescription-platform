@@ -42,7 +42,7 @@ const createDoctorConsultationForm = asyncHandler(async (req, res, next) => {
 })
 
 const listOfPatientSubmitConsultation = asyncHandler(async (req, res, next) => {
-    const doctorId = req.doctor._id;    
+    const doctorId = req.doctor._id;
 
     const consultationForms = await DoctorConsultationForm.find({ doctorId }).populate('patientId', 'name email phone');
 
