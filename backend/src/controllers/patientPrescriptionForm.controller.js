@@ -1,51 +1,63 @@
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
-import { asyncHandler } from "../utils/asyncHandler.js"
-import { Patient } from "../models/patient.model.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { Patient } from "../models/patient.model.js";
 import { PatientPrescriptionForm } from '../models/patientPrescriptionForm.model.js';
 import { generatePrescriptionPDF } from '../utils/generatePDF.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import { DoctorConsultationForm } from '../models/doctorConsultationForm.model.js';
+
+/*
+1. Create Patient Prescription Form - Doctor
+2. get data of careToBeTaken, medicines from req.body, patientId from req.params, doctorId from req.doctor, ConsultationFormId from req.params
+2. Validate required fields
+3. Check if patient exists
+5 check if ConsultationForm exists
+4. Create Patient Prescription Form
+6. Generate PDF using generatePrescriptionPDF utility
+7. Save PDF local file system
+7. Upload PDF to Cloudinary using uploadOnCloudinary utility
+8. Save PDF URL in Patient Prescription Form
+9. Return success response with Patient Prescription Form data
+*/
 
 const createPatientPrescriptionForm = asyncHandler(async (req, res) => {
-    const patientId = req.params.doctorId;
-    const { careToBeTaken, medicines } = req.body;
     const doctorId = req.doctor._id;
+    const patientId = req.params.patientId;
+    const consultationFormId = req.params.consultationFormId;
+    const { careToBeTaken, medicines } = req.body;
 
-    if (!careToBeTaken || !medicines) {
-        throw new ApiError(400, 'Care to be taken and medicines are required');
+    if (!careToBeTaken || !medicines || medicines.length === 0) {
+        throw new ApiError(400, 'careToBeTaken and medicines are required');
     }
 
-    const formData = {
-        patientId,
-        doctorId,
-        careToBeTaken,
-        medicines
-    };
-
-    const checkPatientExists = await Patient.findById(patientId);
-
-    if (!checkPatientExists) {
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
         throw new ApiError(404, 'Patient not found');
     }
 
-    const patientPrescriptionForm = await PatientPrescriptionForm.create(formData);
-
-    if (!patientPrescriptionForm) {
-        throw new ApiError(500, 'Failed to create patient prescription form');
+    const consultationForm = await DoctorConsultationForm.findById(consultationFormId);
+    if (!consultationForm) {
+        throw new ApiError(404, 'Consultation Form not found');
     }
 
-    const prescriptionData = {
+    const prescriptionForm = await PatientPrescriptionForm.create({
+        doctorId,
+        patientId,
+        consultationFormId,
         careToBeTaken,
-        medicines,
-        doctor: req.doctor,
-        patient: checkPatientExists
-    };
+        medicines
+    });
 
-    const pdfBlob = generatePrescriptionPDF(prescriptionData);
+    const pdfPath = await generatePrescriptionPDF(prescriptionForm, patient, req.doctor);
 
+    const pdfUploadResult = await uploadOnCloudinary(pdfPath, 'prescriptions');
 
+    prescriptionForm.pdf = pdfUploadResult.url;
+    await prescriptionForm.save();
 
-    return res.status(201).json(new ApiResponse(201, { patientPrescriptionForm }, 'Patient prescription form created successfully'));
-})
+    return res.status(201).json(new ApiResponse(201, { prescriptionForm }, 'Patient Prescription Form created successfully'));
+});
 
 const getAllPrescriptionsByDoctor = asyncHandler(async (req, res) => {
     const doctorId = req.doctor._id;

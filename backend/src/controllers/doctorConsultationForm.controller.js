@@ -11,7 +11,7 @@ const createDoctorConsultationForm = asyncHandler(async (req, res, next) => {
         recentSurgery,
         familyMedicalHistory,
         paymentTransactionId } = req.body;
-    const patientId = req.user._id;
+    const patientId = req.patient._id;
 
     if ([!recentSurgery, !familyMedicalHistory, !paymentTransactionId].some(field => field === undefined || field === null || field === '' && field.currentIllnessHistory === 0)) {
         throw new ApiError(400, 'All fields are required except current illness history');
@@ -32,7 +32,7 @@ const createDoctorConsultationForm = asyncHandler(async (req, res, next) => {
         throw new ApiError(404, 'Doctor not found');
     }
 
-    const doctorConsultationForm = await doctorConsultationForm.create(formData);
+    const doctorConsultationForm = await DoctorConsultationForm.create(formData);
 
     if (!doctorConsultationForm) {
         throw new ApiError(500, 'Failed to submit doctor consultation form');
@@ -42,7 +42,7 @@ const createDoctorConsultationForm = asyncHandler(async (req, res, next) => {
 })
 
 const listOfPatientSubmitConsultation = asyncHandler(async (req, res, next) => {
-    const doctorId = req.user._id;
+    const doctorId = req.doctor._id;    
 
     const consultationForms = await DoctorConsultationForm.find({ doctorId }).populate('patientId', 'name email phone');
 

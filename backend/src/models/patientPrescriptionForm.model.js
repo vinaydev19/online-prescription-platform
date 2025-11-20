@@ -11,6 +11,11 @@ const patientPrescriptionFormSchema = new mongoose.Schema({
         ref: 'Doctor',
         required: true
     },
+    consultationFormId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'DoctorConsultationForm',
+        required: true
+    },
     careToBeTaken: {
         type: String,
         required: true

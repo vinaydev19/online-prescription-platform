@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-router.route('/create').post(verifyJWT, authorizeRoles('doctor'), createPatientPrescriptionForm);
+router.route('/create/:patientId/:consultationFormId').post(verifyJWT, authorizeRoles('doctor'), createPatientPrescriptionForm);
 router.route('/doctor/all').get(verifyJWT, authorizeRoles('doctor'), getAllPrescriptionsByDoctor);
 router.route('/doctor/:prescriptionId').get(verifyJWT, authorizeRoles('doctor'), getPrescriptionByIdByDoctor);
 router.route('doctor/update/:prescriptionId').put(verifyJWT, authorizeRoles('doctor'), updatePrescriptionByDoctor);
