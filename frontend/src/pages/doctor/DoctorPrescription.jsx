@@ -19,20 +19,17 @@ import {
 import toast from "react-hot-toast";
 
 function DoctorPrescription() {
-  // 📌 API Calls
   const { data, isLoading, isError } = useGetPrescriptionsByDoctorQuery();
   const [createPrescription] = useCreatePrescriptionMutation();
   const [updatePrescription] = useUpdatePrescriptionMutation();
   const [deletePrescriptionApi] = useDeletePrescriptionMutation();
 
-  // Extract prescriptions
   const prescriptions = data?.data?.prescriptions || [];
 
   const [showForm, setShowForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
 
-  // 🔥 Form fields
   const [formValues, setFormValues] = useState({
     careToBeTaken: "",
     medicines: "",
@@ -68,11 +65,10 @@ function DoctorPrescription() {
     });
   };
 
-  // ➤ CREATE PRESCRIPTION
   const handleCreate = async () => {
     try {
       const payload = {
-        patientId: selectedPrescription?.patientId, // will come from "Create" inside consultation page
+        patientId: selectedPrescription?.patientId,
         consultationFormId: selectedPrescription?.consultationFormId,
         data: formValues,
       };
@@ -87,7 +83,6 @@ function DoctorPrescription() {
     }
   };
 
-  // ➤ UPDATE PRESCRIPTION
   const handleUpdate = async () => {
     try {
       await updatePrescription({
@@ -104,7 +99,6 @@ function DoctorPrescription() {
     }
   };
 
-  // ➤ DELETE PRESCRIPTION
   const handleDelete = async (id) => {
     try {
       await deletePrescriptionApi(id).unwrap();
@@ -115,7 +109,6 @@ function DoctorPrescription() {
     }
   };
 
-  // 🌀 Loading UI
   if (isLoading)
     return (
       <div className="p-6 text-xl text-gray-600 text-center">
@@ -146,7 +139,6 @@ function DoctorPrescription() {
         </button>
       </div>
 
-      {/* LIST */}
       <div className="space-y-4">
         {prescriptions.map((item) => (
           <div
@@ -197,7 +189,6 @@ function DoctorPrescription() {
         ))}
       </div>
 
-      {/* FORM POPUP */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center px-4">
           <div className="bg-white shadow-xl rounded-xl p-6 w-full max-w-xl relative">

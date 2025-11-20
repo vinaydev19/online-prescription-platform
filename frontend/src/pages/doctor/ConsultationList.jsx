@@ -64,7 +64,7 @@ function ConsultationList() {
 
       toast.success("Prescription created!");
 
-      closePrescriptionForm(); // Close modal
+      closePrescriptionForm(); 
     } catch (err) {
       toast.error(err?.data?.message || "Failed to create prescription");
       console.error(err);

@@ -5,7 +5,7 @@ function ProtectedRoute() {
   const doctor = useSelector((state) => state.doctor.doctor);
   const patient = useSelector((state) => state.patient.patient);
 
-  const isLoggedIn = doctor || patient; // if either logged in → allow
+  const isLoggedIn = doctor || patient; 
 
   return isLoggedIn ? <Outlet /> : <Navigate to="/patient/login" />;
 }
