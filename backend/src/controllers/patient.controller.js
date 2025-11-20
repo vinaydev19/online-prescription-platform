@@ -5,6 +5,7 @@ import { Patient } from "../models/patient.model.js"
 import { Doctor } from "../models/doctor.model.js"
 import jwt from 'jsonwebtoken';
 import { PatientPrescriptionForm } from "../models/patientPrescriptionForm.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -39,12 +40,11 @@ const generateAccessAndRefreshToken = async (patientId) => {
     }
 }
 
-const PatientSignUp = asyncHandler(async (req, res) => {
+const patientSignUp = asyncHandler(async (req, res) => {
     const {
         name,
         email,
         age,
-        profilePicture,
         phoneNumber,
         historyOfSurgery,
         historyOfIllness,
@@ -52,17 +52,7 @@ const PatientSignUp = asyncHandler(async (req, res) => {
         role
     } = req.body
 
-    if ([
-        name,
-        email,
-        age,
-        profilePicture,
-        phoneNumber,
-        historyOfSurgery,
-        historyOfIllness,
-        password,
-        role
-    ].some(field => !field || field === '' || field === undefined && field.historyOfIllness.length === 0 && field.historyOfSurgery.length === 0)) {
+    if ([name, email, age, phoneNumber, password].some(field => !field || field.trim() === '' && !Array.isArray(historyOfIllness) && !Array.isArray(historyOfSurgery))) {
         throw new ApiError(400, 'All fields are required')
     }
 
@@ -74,11 +64,19 @@ const PatientSignUp = asyncHandler(async (req, res) => {
         throw new ApiError(409, 'Patient already exists with this email or phone number')
     }
 
+    const profilePictureLocalPath = req.file.path;
+
+    const profilePictureUploadResult = await uploadOnCloudinary(profilePictureLocalPath,);
+
+    if (!profilePictureUploadResult) {
+        throw new ApiError(500, 'Failed to upload profile picture')
+    }
+
     const patient = await Patient.create({
         name,
         email,
         age,
-        profilePicture,
+        profilePicture: profilePictureUploadResult.url,
         phoneNumber,
         historyOfSurgery,
         historyOfIllness,
@@ -95,10 +93,10 @@ const PatientSignUp = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(201, { loggedPatient }, 'Patient created successfully'))
 })
 
-const PatientLogin = asyncHandler(async (req, res) => {
+const patientLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
-    if ([email, password].some(field => !field === undefined || field === '')) {
+    if ([email, password].some(field => !field || field.trim() === '')) {
         throw new ApiError(400, 'All fields are required')
     }
 
@@ -126,7 +124,7 @@ const PatientLogin = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, { loggedPatient }, 'Patient logged in successfully'))
 })
 
-const PatientLogout = asyncHandler(async (req, res) => {
+const patientLogout = asyncHandler(async (req, res) => {
     await Patient.findByIdAndUpdate(
         req.patient._id,
         {
@@ -139,9 +137,9 @@ const PatientLogout = asyncHandler(async (req, res) => {
 
     res
         .status(200)
-        .clearCookie('accessToken', accessToken, accessCookieOptions)
-        .clearCookie('refreshToken', refreshToken, refreshCookieOptions)
-        .json(new ApiResponse(200, { loggedPatient }, 'Patient logout in successfully'))
+        .clearCookie('accessToken', accessCookieOptions)
+        .clearCookie('refreshToken', refreshCookieOptions)
+        .json(new ApiResponse(200, 'Patient logout in successfully'))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res, next) => {
@@ -205,9 +203,9 @@ const getPatientPrescriptions = asyncHandler(async (req, res, next) => {
 })
 
 export {
-    PatientSignUp,
-    PatientLogin,
-    PatientLogout,
+    patientSignUp,
+    patientLogin,
+    patientLogout,
     refreshAccessToken,
     getCurrentPatient,
     getAllDoctorsList,

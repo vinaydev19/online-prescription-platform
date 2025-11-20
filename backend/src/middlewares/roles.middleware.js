@@ -1,6 +1,16 @@
 export const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.role)) {
+        // if (!allowedRoles.includes(req.doctor.role)) {
+        //     throw new ApiError(403, "You do not have permission");
+        // }
+        // if (!allowedRoles.includes(req.patient.role)) {
+        //     throw new ApiError(403, "You do not have permission");
+        // }
+
+        if(req.doctor && !allowedRoles.includes(req.doctor.role)) {
+            throw new ApiError(403, "You do not have permission");
+        }
+        if(req.patient && !allowedRoles.includes(req.patient.role)) {
             throw new ApiError(403, "You do not have permission");
         }
         next();

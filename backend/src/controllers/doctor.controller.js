@@ -40,7 +40,6 @@ const generateAccessAndRefreshToken = async (doctorId) => {
 }
 
 const doctorSignUp = asyncHandler(async (req, res) => {
-    console.log('req.body', req.body);
     const {
         name,
         email,
@@ -139,9 +138,9 @@ const doctorLogout = asyncHandler(async (req, res) => {
 
     res
         .status(200)
-        .clearCookie('accessToken', accessToken, accessCookieOptions)
-        .clearCookie('refreshToken', refreshToken, refreshCookieOptions)
-        .json(new ApiResponse(200, { loggedDoctor }, 'Doctor logout in successfully'))
+        .clearCookie('accessToken', accessCookieOptions)
+        .clearCookie('refreshToken', refreshCookieOptions)
+        .json(new ApiResponse(200, 'Doctor logout in successfully'))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res, next) => {

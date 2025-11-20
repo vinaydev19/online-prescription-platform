@@ -2,6 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import { errorHandler } from "./middlewares/errorHandler.middleware.js"
+import bodyParser from "body-parser"
 
 const app = express()
 
@@ -14,6 +15,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({ limit: "16kb", extended: true }))
 app.use(express.json())
 app.use(express.static("public"))
+app.use(bodyParser.json());
 
 import doctorRouter from "./routes/doctor.route.js"
 import patientRouter from "./routes/patient.route.js"

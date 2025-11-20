@@ -10,11 +10,12 @@ import {
     getAllPatientsForDoctor,
     getAllDoctorsList
 } from "../controllers/doctor.controller.js"
+import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
 
-router.route('/signup').post(doctorSignUp);
+router.route('/signup').post(upload.single('profilePicture'), doctorSignUp);
 router.route('/login').post(doctorLogin);
 router.route('/logout').post(verifyJWT, doctorLogout);
 router.route('/refresh-token').get(refreshAccessToken);
