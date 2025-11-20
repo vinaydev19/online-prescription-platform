@@ -25,7 +25,7 @@ const patientPrescriptionFormSchema = new mongoose.Schema({
         required: true
     },
     pdf: {
-        type: Buffer
+        type: String
     }
 }, { timestamps: true })
 

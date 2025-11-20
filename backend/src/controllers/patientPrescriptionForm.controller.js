@@ -41,10 +41,18 @@ const createPatientPrescriptionForm = asyncHandler(async (req, res) => {
 
     const pdfUploadResult = await uploadOnCloudinary(pdfPath);
 
-    prescriptionForm.pdf = pdfUploadResult.url;
+    prescriptionForm.pdf = pdfUploadResult.secure_url;
     await prescriptionForm.save();
 
-    fs.unlinkSync(pdfPath);
+    setTimeout(() => {
+        try {
+            if (fs.existsSync(pdfPath)) {
+                fs.unlinkSync(pdfPath);
+            }
+        } catch (err) {
+            console.log("Error deleting PDF file (ignored):", err.message);
+        }
+    }, 300);
 
     return res.status(201).json(new ApiResponse(201, { prescriptionForm }, 'Patient Prescription Form created successfully'));
 });
@@ -70,7 +78,7 @@ const getPrescriptionByIdByDoctor = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { prescription }, 'Prescription retrieved successfully'));
 });
 
-export const updatePrescriptionByDoctor = asyncHandler(async (req, res) => {
+const updatePrescriptionByDoctor = asyncHandler(async (req, res) => {
     const doctorId = req.doctor._id;
     const prescriptionId = req.params.prescriptionId;
     const { careToBeTaken, medicines } = req.body;
