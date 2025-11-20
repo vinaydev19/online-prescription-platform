@@ -2,9 +2,9 @@ import Router from 'express';
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 import { authorizeRoles } from "../middlewares/roles.middleware.js"
 import {
-    DoctorSignUp,
-    DoctorLogin,
-    DoctorLogout,
+    doctorSignUp,
+    doctorLogin,
+    doctorLogout,
     refreshAccessToken,
     getCurrentDoctor,
     getAllPatientsForDoctor,
@@ -13,9 +13,10 @@ import {
 
 const router = Router();
 
-router.route('/signup').post(DoctorSignUp);
-router.route('/login').post(DoctorLogin);
-router.route('/logout').post(verifyJWT, DoctorLogout);
+
+router.route('/signup').post(doctorSignUp);
+router.route('/login').post(doctorLogin);
+router.route('/logout').post(verifyJWT, doctorLogout);
 router.route('/refresh-token').get(refreshAccessToken);
 router.route('/me').get(verifyJWT, authorizeRoles('doctor'), getCurrentDoctor);
 router.route('/patients').get(verifyJWT, authorizeRoles('doctor'), getAllPatientsForDoctor);

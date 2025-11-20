@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { Doctor } from "../models/doctor.model.js"
 import jwt from 'jsonwebtoken';
 import { DoctorConsultationForm } from '../models/doctorConsultationForm.model.js';
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -38,19 +39,19 @@ const generateAccessAndRefreshToken = async (doctorId) => {
     }
 }
 
-const DoctorSignUp = asyncHandler(async (req, res) => {
+const doctorSignUp = asyncHandler(async (req, res) => {
+    console.log('req.body', req.body);
     const {
         name,
         email,
         specialty,
-        profilePicture,
         phoneNumber,
         yearsOfExperience,
         password,
-        role
+        role = 'doctor'
     } = req.body
 
-    if ([name, email, specialty, profilePicture, phoneNumber, yearsOfExperience, password].some(field => !field === undefined || field === '')) {
+    if ([name, email, specialty, phoneNumber, yearsOfExperience, password].some(field => !field || field.trim() === '')) {
         throw new ApiError(400, 'All fields are required')
     }
 
@@ -62,11 +63,23 @@ const DoctorSignUp = asyncHandler(async (req, res) => {
         throw new ApiError(409, 'Doctor already exists with this email or phone number')
     }
 
+    if (!req.file) {
+        throw new ApiError(400, 'Profile picture is required')
+    }
+
+    const profilePictureLocalPath = req.file.path;
+
+    const profilePictureUploadResult = await uploadOnCloudinary(profilePictureLocalPath,);
+
+    if (!profilePictureUploadResult) {
+        throw new ApiError(500, 'Failed to upload profile picture')
+    }
+
     const doctor = await Doctor.create({
         name,
         email,
         specialty,
-        profilePicture,
+        profilePicture: profilePictureUploadResult.url,
         phoneNumber,
         yearsOfExperience,
         password,
@@ -82,10 +95,10 @@ const DoctorSignUp = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(201, { loggedDoctor }, 'Doctor created successfully'))
 })
 
-const DoctorLogin = asyncHandler(async (req, res) => {
+const doctorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
-    if ([email, password].some(field => !field === undefined || field === '')) {
+    if ([email, password].some(field => !field || field.trim() === '')) {
         throw new ApiError(400, 'All fields are required')
     }
 
@@ -113,7 +126,7 @@ const DoctorLogin = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, { loggedDoctor }, 'Doctor logged in successfully'))
 })
 
-const DoctorLogout = asyncHandler(async (req, res) => {
+const doctorLogout = asyncHandler(async (req, res) => {
     await Doctor.findByIdAndUpdate(
         req.doctor._id,
         {
@@ -192,9 +205,9 @@ const getAllDoctorsList = asyncHandler(async (req, res, next) => {
 })
 
 export {
-    DoctorSignUp,
-    DoctorLogin,
-    DoctorLogout,
+    doctorSignUp,
+    doctorLogin,
+    doctorLogout,
     refreshAccessToken,
     getCurrentDoctor,
     getAllPatientsForDoctor,

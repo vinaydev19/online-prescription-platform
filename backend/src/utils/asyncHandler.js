@@ -12,6 +12,6 @@ const asyncHandler = (fn) => async (...args) => {
       next(error);
     }
   }
-};
+}; 
 
 export { asyncHandler };
