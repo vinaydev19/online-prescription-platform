@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Initial state for the doctor slice
 const doctorSlice = createSlice({
     name: 'doctor',
     initialState: {

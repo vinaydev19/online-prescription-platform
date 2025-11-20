@@ -1,49 +1,75 @@
 import React, { useState } from "react";
-import { usePatientLoginMutation } from "@/redux/api/patientApiSlice";
-import { useDispatch } from "react-redux";
-import { setPatient } from "@/redux/slices/patientSlice";
-import { useNavigate } from "react-router-dom";
 
 function PatientLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const [loginPatient, { isLoading }] = usePatientLoginMutation();
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const submit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    try {
-      const res = await loginPatient({ email, password }).unwrap();
-
-      dispatch(setPatient(res.data.loggedPatient));
-      navigate("/patient/doctors");
-
-    } catch (err) {
-      alert(err?.data?.message || "Login failed");
-    }
+    console.log("Login submitted:", formData);
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
+          Patient Login
+        </h2>
 
-      <form className="bg-white p-6 rounded shadow w-96" onSubmit={submit}>
-        <h2 className="text-2xl font-semibold text-center mb-4">Patient Login</h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
 
-        <input className="border p-2 w-full mb-3" placeholder="Email"
-          value={email} onChange={(e) => setEmail(e.target.value)} />
+          <div>
+            <label className="block font-medium mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+            />
+          </div>
 
-        <input className="border p-2 w-full mb-4" type="password" placeholder="Password"
-          value={password} onChange={(e) => setPassword(e.target.value)} />
+          <div>
+            <label className="block font-medium mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              required
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+            />
+          </div>
 
-        <button className="bg-blue-600 text-white w-full py-2 rounded" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition"
+          >
+            Login
+          </button>
 
+        </form>
+
+        <p className="text-center mt-4 text-gray-600">
+          Don’t have an account?{" "}
+          <a href="/patient/signup" className="text-blue-600 font-semibold">
+            Sign Up
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

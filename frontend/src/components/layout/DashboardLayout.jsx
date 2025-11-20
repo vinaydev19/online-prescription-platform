@@ -2,14 +2,12 @@ import React from "react";
 import SideBar from "./SideBar";
 import { Outlet } from "react-router-dom";
 
-function DashboardLayout() {
+function DashboardLayout({ role }) {
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <SideBar />
+    <div className="flex bg-gray-100 min-h-screen">
+      <SideBar role={role} />
 
-      {/* Main content */}
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-8">
         <Outlet />
       </div>
     </div>

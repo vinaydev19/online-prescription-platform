@@ -1,168 +1,235 @@
 import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 function DoctorConsultationform() {
+  const { doctorId } = useParams();
+  const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
 
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     currentIllnessHistory: "",
     recentSurgery: "",
-    familyMedicalHistory: {
-      diabeticsStatus: "",
-      allergies: "",
-      others: ""
-    },
-    paymentTransactionId: ""
+    diabeticsStatus: "",
+    allergies: "",
+    others: "",
+    paymentTransactionId: "",
   });
 
-  const next = () => setStep(step + 1);
-  const back = () => setStep(step - 1);
+  const nextStep = () => {
+    if (step === 2 && !formData.paymentTransactionId) {
+      setFormData({
+        ...formData,
+        paymentTransactionId: generateTransactionId(),
+      });
+    }
+
+    setStep((prev) => prev + 1);
+  };
+  const prevStep = () => setStep((prev) => prev - 1);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const generateTransactionId = () => {
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const time = Date.now().toString().slice(-6);
+    return `TXN-${time}-${random}`;
+  };
+
+
+  const handleSubmit = () => {
+    console.log("Final Submitted Data:", formData);
+    alert("Form Submitted Successfully!");
+    navigate("/patient/doctors");
+  };
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-gray-100 flex justify-center items-start py-10 px-4">
+      <button
+        onClick={() => navigate("/patient/doctors")}
+        className="absolute top-6 right-6 text-gray-700 hover:text-red-600 text-3xl font-bold"
+      >
+        ×
+      </button>
+      <div className="bg-white w-full max-w-2xl shadow-lg rounded-xl p-6">
+        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
+          Consultation Form (Doctor ID: {doctorId})
+        </h2>
 
-      {/* STEP 1  */}
-      {step === 1 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Step 1: Illness History</h2>
-
-          <input
-            type="text"
-            placeholder="Current illness history"
-            className="border p-2 w-full mb-3"
-            value={form.currentIllnessHistory}
-            onChange={(e) =>
-              setForm({ ...form, currentIllnessHistory: e.target.value })
-            }
-          />
-
-          <input
-            type="text"
-            placeholder="Recent surgery (if any)"
-            className="border p-2 w-full mb-3"
-            value={form.recentSurgery}
-            onChange={(e) =>
-              setForm({ ...form, recentSurgery: e.target.value })
-            }
-          />
-
-          <button onClick={next} className="bg-blue-500 text-white p-2 rounded">
-            Next
-          </button>
+        <div className="flex justify-between gap-10 mb-8">
+          {[1, 2, 3].map((s) => (
+            <div
+              key={s}
+              className={`w-1/3 text-center py-2 rounded-lg ${step === s
+                ? "bg-blue-600 text-white"
+                : "bg-gray-300 text-gray-700"
+                }`}
+            >
+              Step {s}
+            </div>
+          ))}
         </div>
-      )}
 
-      {/* STEP 2 */}
-      {step === 2 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Step 2: Family Medical History</h2>
+        {step === 1 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              Step 1: Illness & Surgery Details
+            </h3>
 
-          {/* Radio Buttons */}
-          <label className="mr-4">
-            <input
-              type="radio"
-              name="diabetics"
-              value="Diabetics"
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  familyMedicalHistory: {
-                    ...form.familyMedicalHistory,
-                    diabeticsStatus: e.target.value
-                  }
-                })
-              }
+            <label className="block mb-2 font-medium">
+              Current Illness History
+            </label>
+            <textarea
+              name="currentIllnessHistory"
+              value={formData.currentIllnessHistory}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 mb-4"
+              placeholder="Describe your current illness…"
             />
-            Diabetics
-          </label>
 
-          <label>
+            <label className="block mb-2 font-medium">
+              Recent Surgery (Mention Time Span)
+            </label>
             <input
-              type="radio"
-              name="diabetics"
-              value="Non-Diabetics"
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  familyMedicalHistory: {
-                    ...form.familyMedicalHistory,
-                    diabeticsStatus: e.target.value
-                  }
-                })
-              }
+              type="text"
+              name="recentSurgery"
+              value={formData.recentSurgery}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 mb-6"
+              placeholder="Example: Appendix surgery 6 months ago"
             />
-            Non-Diabetics
-          </label>
 
-          <input
-            type="text"
-            placeholder="Allergies"
-            className="border p-2 w-full my-3"
-            onChange={(e) =>
-              setForm({
-                ...form,
-                familyMedicalHistory: {
-                  ...form.familyMedicalHistory,
-                  allergies: e.target.value
-                }
-              })
-            }
-          />
-
-          <input
-            type="text"
-            placeholder="Others"
-            className="border p-2 w-full mb-4"
-            onChange={(e) =>
-              setForm({
-                ...form,
-                familyMedicalHistory: {
-                  ...form.familyMedicalHistory,
-                  others: e.target.value
-                }
-              })
-            }
-          />
-
-          <div className="flex justify-between">
-            <button onClick={back} className="bg-gray-400 text-white p-2 rounded">
-              Back
-            </button>
-            <button onClick={next} className="bg-blue-500 text-white p-2 rounded">
-              Next
-            </button>
+            <div className="flex justify-end">
+              <button
+                onClick={nextStep}
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Next →
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* STEP 3 */}
-      {step === 3 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Step 3: Payment</h2>
+        {step === 2 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              Step 2: Family Medical History
+            </h3>
 
-          <p className="mb-3">Scan QR Code to make payment:</p>
+            <label className="block font-medium mb-2">Diabetes Status</label>
+            <div className="flex gap-6 mb-4">
+              <label>
+                <input
+                  type="radio"
+                  name="diabeticsStatus"
+                  value="Diabetics"
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                Diabetics
+              </label>
 
-          <img
-            src="/qr.png"
-            alt="QR Code"
-            className="w-40 mb-4"
-          />
+              <label>
+                <input
+                  type="radio"
+                  name="diabeticsStatus"
+                  value="Non-Diabetics"
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                Non-Diabetics
+              </label>
+            </div>
 
-          <input
-            type="text"
-            placeholder="Enter Transaction ID"
-            className="border p-2 w-full mb-3"
-            value={form.paymentTransactionId}
-            onChange={(e) =>
-              setForm({ ...form, paymentTransactionId: e.target.value })
-            }
-          />
+            <label className="block mb-2 font-medium">Any Allergies?</label>
+            <input
+              type="text"
+              name="allergies"
+              value={formData.allergies}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 mb-4"
+              placeholder="Example: Dust allergy"
+            />
 
-          <button className="bg-green-600 text-white p-2 rounded">
-            Submit Consultation
-          </button>
-        </div>
-      )}
+            <label className="block mb-2 font-medium">Others</label>
+            <input
+              type="text"
+              name="others"
+              value={formData.others}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 mb-6"
+              placeholder="Other medical history…"
+            />
 
+            <div className="flex justify-between">
+              <button
+                onClick={prevStep}
+                className="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600"
+              >
+                ← Back
+              </button>
+
+              <button
+                onClick={nextStep}
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              Step 3: Payment Details
+            </h3>
+
+            <p className="text-gray-700 mb-4">
+              Scan the QR code below to make the payment.
+            </p>
+
+            <div className="flex justify-center mb-4">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Payment"
+                alt="QR Code"
+                className="w-44 h-44"
+              />
+            </div>
+
+            <label className="block mb-2 font-medium">Transaction ID</label>
+            <input
+              type="text"
+              name="paymentTransactionId"
+              value={formData.paymentTransactionId}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 mb-6"
+              placeholder="Enter your transaction ID"
+            />
+
+            <div className="flex justify-between">
+              <button
+                onClick={prevStep}
+                className="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600"
+              >
+                ← Back
+              </button>
+
+              <button
+                onClick={handleSubmit}
+                className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
+              >
+                Submit Form ✓
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

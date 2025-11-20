@@ -1,78 +1,137 @@
 import React, { useState } from "react";
-import { useDoctorSignupMutation } from "@/redux/api/doctorApiSlice";
-import { useNavigate } from "react-router-dom";
 
 function DoctorSignup() {
-  const [signupDoctor, { isLoading }] = useDoctorSignupMutation();
-  const navigate = useNavigate();
-
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     specialty: "",
     phoneNumber: "",
     yearsOfExperience: "",
     password: "",
+    profilePicture: null
   });
 
-  const [profilePicture, setProfilePicture] = useState(null);
-
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, profilePicture: e.target.files[0] });
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const fd = new FormData();
-
-    Object.keys(form).forEach((key) => {
-      fd.append(key, form[key]);
-    });
-
-    fd.append("profilePicture", profilePicture);
-
-    try {
-      await signupDoctor(fd).unwrap();
-      alert("Signup successful");
-      navigate("/doctor/login");
-    } catch (err) {
-      alert(err?.data?.message || "Signup failed");
-    }
+    console.log("Doctor Signup Data:", formData);
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+      <div className="w-full max-w-2xl bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-3xl font-bold text-blue-600 text-center mb-6">
+          Doctor Signup
+        </h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow w-[500px]"
-        encType="multipart/form-data"
-      >
-        <h2 className="text-2xl font-semibold mb-4 text-center">Doctor Signup</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="font-medium">Full Name</label>
+              <input
+                type="text"
+                name="name"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="Enter full name"
+              />
+            </div>
 
-        <input name="name" placeholder="Name" className="border p-2 w-full mb-3" onChange={handleChange} />
-        <input name="email" placeholder="Email" className="border p-2 w-full mb-3" onChange={handleChange} />
-        <input name="specialty" placeholder="Specialty" className="border p-2 w-full mb-3" onChange={handleChange} />
-        <input name="phoneNumber" placeholder="Phone Number" className="border p-2 w-full mb-3" onChange={handleChange} />
-        <input name="yearsOfExperience" placeholder="Experience (e.g. 1.5)" className="border p-2 w-full mb-3" onChange={handleChange} />
-        <input type="password" name="password" placeholder="Password" className="border p-2 w-full mb-3" onChange={handleChange} />
+            <div>
+              <label className="font-medium">Email</label>
+              <input
+                type="email"
+                name="email"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="Enter email"
+              />
+            </div>
 
-        <label className="font-medium">Profile Picture</label>
-        <input
-          type="file"
-          className="border p-2 w-full mb-4"
-          onChange={(e) => setProfilePicture(e.target.files[0])}
-        />
+            <div>
+              <label className="font-medium">Specialty</label>
+              <input
+                type="text"
+                name="specialty"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="e.g. Cardiologist"
+              />
+            </div>
 
-        <button
-          disabled={isLoading}
-          className="bg-green-600 text-white w-full py-2 rounded"
-        >
-          {isLoading ? "Creating..." : "Signup"}
-        </button>
-      </form>
+            <div>
+              <label className="font-medium">Phone Number</label>
+              <input
+                type="number"
+                name="phoneNumber"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="Enter phone number"
+              />
+            </div>
 
+            <div>
+              <label className="font-medium">Years of Experience</label>
+              <input
+                type="number"
+                name="yearsOfExperience"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="5"
+              />
+            </div>
+
+            <div>
+              <label className="font-medium">Password</label>
+              <input
+                type="password"
+                name="password"
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-lg"
+                placeholder="Create password"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="font-medium">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              required
+              onChange={handleFileChange}
+              className="w-full"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold"
+          >
+            Signup
+          </button>
+
+          <p className="text-center mt-2 text-gray-600">
+            Already have an account?
+            <a href="/doctor/login" className="text-blue-600 font-semibold ml-1">
+              Login
+            </a>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
